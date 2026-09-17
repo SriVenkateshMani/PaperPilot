@@ -4,7 +4,10 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg://raguser:ragpassword@postgres:5432/ragdb
 
   postgres:
     image: postgres:16
@@ -14,3 +17,8 @@ services:
       POSTGRES_DB: ragdb
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U raguser -d ragdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
