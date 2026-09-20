@@ -30,5 +30,5 @@ def search_papers(query, max_results = 5):
         return results
 
     except arxiv.HTTPError as e:
-        logger.erro(f"arXiv API failed: {e}")
+        logger.error(f"arXiv API failed: {e}")
         return []

@@ -21,7 +21,10 @@ def ingest_papers(query: str, max_results: int = 5):
             db.commit()
 
             logger.info(f"Stored {len(papers)} papers in the postgres")
+            logger.info(type(papers))
 
+            return papers
+        
         except Exception as e:
             db.rollback()
             logger.info(f"database error: {e}")
