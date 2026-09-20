@@ -1,4 +1,4 @@
-from sentence_transformer import SentenceTransformer
+from sentence_transformers import SentenceTransformer
 from app.logger import get_logger
 
 logger = get_logger(__name__)
@@ -10,5 +10,7 @@ def embed_chunks(chunks: list[str]):
 
     embeddings = model.encode(
         chunks,
-        normalize = True
+        normalize_embeddings = True
     )
+
+# Returns a list of vectors
