@@ -1,7 +1,7 @@
 from app.ingestion.store_papers import ingest_papers
 from app.ingestion.pdf_downloader import download_paper
 from app.ingestion.pdf_parser import parse_pdf
-from app.ingestion.indexer import create_index
+from app.ingestion.indexer import create_index, index_chunks
 from app.ingestion.embedder import embed_chunks
 from app.ingestion.chunker import text_chunk
 
@@ -23,6 +23,9 @@ if papers:
 
     embeddings = embed_chunks(chunks)
 
-    index_chunks(paper, chunks, embeddings)
+    logger.info(f"type embeddings: {type(embeddings)}")
+    logger.info(f"type first embedding: {type(embeddings[0])}")
+
+    index_chunks(paper, embeddings, chunks)
 
     logger.info(f"Indexed {len(chunks)} chunks")

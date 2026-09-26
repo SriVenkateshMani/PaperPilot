@@ -5,7 +5,9 @@ from urllib.request import urlretrieve
 logger = get_logger(__name__)
 
 def download_paper(paper, download_dir: str = "data/arxiv_pdfs"):
+    # Truns string path into a Path object
     download_path = Path(download_dir)
+    # Create a directory
     download_path.mkdir(parents = True, exist_ok = True)
 
     logger.info(f"Downloading paper: {paper.title}")

@@ -12,5 +12,7 @@ def embed_chunks(chunks: list[str]):
         chunks,
         normalize_embeddings = True
     )
-
+    
+    logger.info(f"Embedding shape: {embeddings.shape}")
 # Returns a list of vectors
+    return embeddings
