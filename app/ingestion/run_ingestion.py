@@ -11,11 +11,13 @@ logger = get_logger(__name__)
 
 create_index()
 
-papers = ingest_papers("retrieval augmented generation", 5)
+papers = ingest_papers(
+    'all:"retrieval augmented generation"', 
+    5
+    )
 
-if papers:
-    paper = papers[0]
-    file_path = download_paper(papers[0])
+for paper in papers:
+    file_path = download_paper(paper)
 
     text = parse_pdf(file_path)
 
@@ -23,9 +25,6 @@ if papers:
 
     embeddings = embed_chunks(chunks)
 
-    logger.info(f"type embeddings: {type(embeddings)}")
-    logger.info(f"type first embedding: {type(embeddings[0])}")
-
     index_chunks(paper, embeddings, chunks)
 
-    logger.info(f"Indexed {len(chunks)} chunks")
+    logger.info(f"Indexed {len(chunks)} chunks for {paper.title}")

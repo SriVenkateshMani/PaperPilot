@@ -5,7 +5,7 @@ from app.logger import get_logger
 logger = get_logger(__name__)
 
 def search_papers(query, max_results = 5):
-    logger.info("Searching arXiv for query: %s", query)
+    logger.info(f"Searching arXiv for query: {query}")
 
     # Build the arXiv search request specification
     search = arxiv.Search(

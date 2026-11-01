@@ -18,7 +18,7 @@ def download_paper(paper, download_dir: str = "data/arxiv_pdfs"):
     # Create the path where to store
     file_path = download_path / file_name
 
-    # save the pdf from the url in the path
+    # Downloads the pdf and saves it in the destination
     urlretrieve(paper.pdf_url, file_path)
 
     logger.info(f"Downloaded PDF to: {file_path}")

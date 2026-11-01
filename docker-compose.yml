@@ -16,6 +16,7 @@ services:
     volumes:
       - ./app:/app/app
 
+
   postgres:
     image: postgres:16
     environment:
@@ -24,11 +25,16 @@ services:
       POSTGRES_DB: ragdb
     ports:
       - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U raguser -d ragdb"]
       interval: 5s
       timeout: 5s
       retries: 5
+
 
   opensearch:
     image: opensearchproject/opensearch:2.19.3
@@ -40,3 +46,21 @@ services:
 
     ports:
       - "9200:9200"
+
+    volumes:
+      - opensearch_data:/usr/share/opensearch/data
+  
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+
+
+
+volumes:
+  postgres_data:
+  opensearch_data:
+  ollama_data:
