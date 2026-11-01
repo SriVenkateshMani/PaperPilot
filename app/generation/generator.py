@@ -1,4 +1,5 @@
 from app.retrieve.hybrid_search import hybrid_search
+from app.cache.redis_client import get_cache, set_cache
 from app.logger import get_logger
 import requests
 import json
@@ -67,13 +68,26 @@ def generate_answer_stream(prompt: str):
 
     response.raise_for_status()
 
+    # Read one line at a time from the stream and decode it and yield it
     for line in response.iter_lines():
         if line:
+            # Decode the line and parse the JSON
             data = json.loads(line.decode("utf-8"))
             yield data["response"]
 
 # Generate the answer
 def answer_question(question: str, k: int = 5):
+    # Handling redis caching for the question
+    cached = get_cache(question)
+
+    if cached:
+        data = json.loads(cached)
+
+        def cached_stream():
+            yield data["answer"]
+
+        return cached_stream(), data["results"]
+
     results = hybrid_search(question, k)
 
     context = build_context(results)
