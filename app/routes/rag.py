@@ -3,7 +3,7 @@ from pydantic import BaseModel
 import json
 from app.generation.generator import answer_question
 from fastapi.responses import StreamingResponse
-from app.cache.redis_client import set_cache
+from app.cache.redis_client import get_cache, set_cache
 
 router = APIRouter(
     prefix="/rag",
@@ -15,23 +15,16 @@ class QuestionRequest(BaseModel):
     question: str
 
 # Format the stream and results into a JSON response
-def format_stream(stream, results):
+def format_stream(stream, results, question):
+    full_answer = ""
     for chunk in stream:
-        full_answer = chunk  # Store the full answer for caching later
+        full_answer += chunk  # Store the full answer for caching later
 
         yield json.dumps({
             "type": "chunk",
             "data": chunk
         }) + "\n"
 
-    # Cache the full answer and results in Redis for future requests
-    set_cache(
-        question,
-        json.dumps({
-            "answer": full_answer,
-            "results": results
-        }),
-    )
     sources = []
 
     for result in results:
@@ -43,6 +36,15 @@ def format_stream(stream, results):
             "chunk_id": source["chunk_id"]
         })
 
+    # Cache the full answer and results in Redis for future requests
+    set_cache(
+        question,
+        json.dumps({
+            "answer": full_answer,
+            "sources": sources
+        }),
+    )
+
     yield json.dumps({
         "type": "sources",
         "data": sources
@@ -51,9 +53,31 @@ def format_stream(stream, results):
 # Expose the /ask endpoint to handle question requests
 @router.post("/ask")
 def ask_question(request: QuestionRequest):
+
+    cached = get_cache(request.question)
+
+    if cached:
+        data = json.loads(cached)
+
+        def cached_stream():
+            yield json.dumps({
+                "type": "chunk",
+                "data": data["answer"]
+            }) + "\n"
+
+            yield json.dumps({
+                "type": "sources",
+                "data": data["sources"]
+            }) + "\n"
+
+        return StreamingResponse(
+            cached_stream(),
+            media_type="application/x-ndjson"
+        )
+
     stream, results = answer_question(request.question)
 
     return StreamingResponse(
-        format_stream(stream, results),
-        media_type="application/x-ndjson" # Set the media type to NDJSON - Newline Delimited JSON
+        format_stream(stream, results, request.question),
+        media_type="application/x-ndjson"
     )

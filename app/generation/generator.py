@@ -28,8 +28,7 @@ def build_prompt(question: str, context: str):
 
     Answer the question using only the provided context.
     Do not invent definitions, acronyms, facts, or terminology.
-    If the context does not contain enough information, say that clearly.
-
+    
     Question: {question}
 
     Context: {context}
@@ -77,21 +76,17 @@ def generate_answer_stream(prompt: str):
 
 # Generate the answer
 def answer_question(question: str, k: int = 5):
-    # Handling redis caching for the question
-    cached = get_cache(question)
-
-    if cached:
-        data = json.loads(cached)
-
-        def cached_stream():
-            yield data["answer"]
-
-        return cached_stream(), data["results"]
 
     results = hybrid_search(question, k)
 
     context = build_context(results)
+
+    logger.info(f"CONTEXT LENGTH: {len(context)}")
+    logger.info(f"CONTEXT PREVIEW:\n{context[:3000]}")
+
     prompt = build_prompt(question, context)
+
+    logger.info(f"FINAL PROMPT:\n{prompt[:5000]}")
 
     answer = generate_answer_stream(prompt)
 
