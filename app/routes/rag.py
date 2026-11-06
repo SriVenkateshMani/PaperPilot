@@ -60,23 +60,27 @@ def ask_question(request: QuestionRequest):
         data = json.loads(cached)
 
         def cached_stream():
+            # Yield the cached answer as a stream
             yield json.dumps({
                 "type": "chunk",
                 "data": data["answer"]
             }) + "\n"
 
+            # Yield the cached sources as a stream
             yield json.dumps({
                 "type": "sources",
                 "data": data["sources"]
             }) + "\n"
 
+        # Return the cached answer and sources as a streaming response
         return StreamingResponse(
             cached_stream(),
             media_type="application/x-ndjson"
         )
-
+    # If not cached, retrieve the answer and sources from the model
     stream, results = answer_question(request.question)
 
+    # Return the answer and sources as a streaming response if not cached
     return StreamingResponse(
         format_stream(stream, results, request.question),
         media_type="application/x-ndjson"

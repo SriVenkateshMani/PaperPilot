@@ -67,12 +67,15 @@ def generate_answer_stream(prompt: str):
 
     response.raise_for_status()
 
-    # Read one line at a time from the stream and decode it and yield it
+    """ Read one line at a time from the stream and decode it and yield it
+    Read complete JSON lines from Ollama's stream, preventing partial JSON chunks
+    caused by network splitting. """
+
     for line in response.iter_lines():
         if line:
             # Decode the line and parse the JSON
             data = json.loads(line.decode("utf-8"))
-            yield data["response"]
+            yield data["response"] # Throw away the metadata and just yield the text response
 
 # Generate the answer
 def answer_question(question: str, k: int = 5):
