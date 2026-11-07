@@ -9,6 +9,7 @@ from app.logger import get_logger
 logger = get_logger(__name__)
 
 
+# Extract sections from the Docling document based on titles and section headers
 def extract_sections(doc):
     sections = []
 
@@ -38,6 +39,7 @@ def extract_sections(doc):
     return sections
 
 
+# Parse the PDF file and extract text and structured sections (both cause the text is a fallback)
 def parse_pdf(file_path):
     converter = DocumentConverter()
 
@@ -45,14 +47,17 @@ def parse_pdf(file_path):
     result = converter.convert(file_path)
     logger.info(type(result))
 
+    doc = result.document
+
+    # Extract structured sections
+    sections = extract_sections(doc)
+
     # Structure Document object into markdown text
-    text = result.document.export_to_maarkdown()
+    text = doc.export_to_markdown()
 
     logger.info(f"Extracted {len(text)} characters from PDF")
 
-
-
-    for element in doc.texts[:5]:
-        logger.info(f"Element type: {type(element)}")
-        logger.info(f"Label: {element.label}")
-        logger.info(f"Text: {element.text[:200]}")
+    return {
+        "text": text,
+        "sections": sections
+    }
